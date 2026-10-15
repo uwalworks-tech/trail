@@ -1,6 +1,3 @@
-/* ==========================================================================
-   국가숲길 인터랙티브 지도
-   ========================================================================== */
 :root {
   --ink: #1d2420;
   --ink-2: #3d4842;
@@ -35,7 +32,6 @@ button { font: inherit; color: inherit; }
 a { color: inherit; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 
-/* ---------------------------------------------------------------- header */
 .app-header {
   position: sticky; top: 0; z-index: 50;
   padding-left: max(clamp(16px, 3vw, 32px), calc((100vw - 1680px) / 2 + 32px)) !important;
@@ -74,7 +70,6 @@ a { color: inherit; }
 .btn-primary { background: var(--brand); border-color: var(--brand); color: #fff; }
 .btn-primary:hover { background: var(--brand-ink); border-color: var(--brand-ink); }
 
-/* trail switcher */
 .trail-nav { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; padding: 2px; min-width: 0; flex: 0 1 auto; }
 .trail-nav.fade-r { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); }
 .trail-nav.fade-l { -webkit-mask-image: linear-gradient(90deg, transparent, #000 28px); mask-image: linear-gradient(90deg, transparent, #000 28px); }
@@ -96,7 +91,6 @@ a { color: inherit; }
   -webkit-appearance: none; appearance: none; max-width: 52vw;
 }
 
-/* ---------------------------------------------------------------- layout */
 .trail-wrap { margin: 0 auto; }
 .page { max-width: 1680px; margin: 0 auto; padding: clamp(12px, 2vw, 24px) clamp(12px, 3vw, 32px) 48px; }
 
@@ -115,7 +109,6 @@ a { color: inherit; }
 .hint { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
 .hint svg { width: 16px; height: 16px; flex: none; }
 
-/* ---------------------------------------------------------------- map stage */
 .map-shell { position: relative; margin: 0 auto; }
 .map-stage {
   position: relative; width: 100%;
@@ -129,7 +122,7 @@ a { color: inherit; }
 .map-stage.is-zoomed { touch-action: none; cursor: grab; }
 .map-stage.is-dragging { cursor: grabbing; }
 .map-canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; transform-origin: 0 0; }
-/* 움직이는 동안만 GPU 레이어 → 멈추면 확대된 크기로 선명하게 다시 그림 */
+
 .map-canvas.is-moving { will-change: transform; }
 .map-canvas.animate { transition: transform .28s cubic-bezier(.2, .7, .2, 1); }
 .map-canvas > img, .map-canvas > svg { position: absolute; inset: 0; width: 100%; height: 100%; }
@@ -143,10 +136,9 @@ a { color: inherit; }
 .map-loading.done { opacity: 0; pointer-events: none; }
 @keyframes shimmer { to { background-position: -150% 0; } }
 
-/* routes (visual) */
 .routes-img { transition: opacity .22s ease; }
 .has-active .routes-img { opacity: .28; }
-/* 강조용 SVG 선: 평상시엔 숨김(원본 이미지가 보임), 선택된 구간만 표시 */
+
 .routes .sec { opacity: 0; transition: opacity .2s ease; }
 .routes .sec path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
 .routes .sec .casing { stroke: #fff; transition: stroke-width .2s; }
@@ -155,14 +147,12 @@ a { color: inherit; }
 .labels-img { transition: opacity .22s; }
 .has-active .labels-img { opacity: .9; }
 
-/* hit areas */
 .hits path { fill: none; stroke: transparent; stroke-linecap: round; stroke-linejoin: round; cursor: pointer; pointer-events: stroke; }
 .hits rect, .hits circle { fill: transparent; cursor: pointer; pointer-events: all; }
 .hits .legend-row { transition: fill .15s; rx: 4px; }
 .hits .legend-row.is-active { fill: rgba(47, 107, 69, .08); stroke: rgba(47, 107, 69, .35); stroke-width: .6; }
 .hits :focus { outline: none; }
 
-/* zoom controls */
 .map-tools {
   position: absolute; right: 12px; bottom: 12px; z-index: 6;
   display: flex; flex-direction: column; border-radius: 12px; overflow: hidden;
@@ -184,7 +174,6 @@ a { color: inherit; }
 }
 .map-toast.show { opacity: 1; transform: translate(-50%, 0); }
 
-/* 전체 화면 */
 .map-stage.is-full {
   position: fixed; inset: 0; z-index: 70;
   width: 100vw; height: 100vh !important; height: 100dvh !important; max-width: none;
@@ -200,7 +189,6 @@ html.map-full-open, html.map-full-open body { overflow: hidden; }
 .map-stage.is-full .full-exit { display: inline-flex; }
 .map-stage.is-full .map-tools { bottom: calc(12px + env(safe-area-inset-bottom)); }
 
-/* ---------------------------------------------------------------- popup (노선 설명창) */
 .popup {
   position: fixed; left: 0; top: 0; z-index: 80;
   width: 232px;
@@ -257,7 +245,6 @@ html.map-full-open, html.map-full-open body { overflow: hidden; }
 .popup-gallery button[aria-pressed="true"] { border-color: var(--popup-color, var(--brand)); }
 .popup-gallery img { width: 100%; height: 100%; object-fit: cover; }
 
-/* 통합형 미리보기 팝업 */
 .popup.preview { width: 340px; }
 .popup.preview .popup-photo { aspect-ratio: 3508 / 2361; background: #f3f3f1; }
 .popup.preview .popup-photo img { object-fit: contain; }
@@ -271,7 +258,6 @@ html.map-full-open, html.map-full-open body { overflow: hidden; }
 .popup.preview .go svg { width: 14px; height: 14px; }
 .popup.preview.pinned .go { display: none; }
 
-/* 모바일: 하단 시트 */
 .popup.sheet {
   left: 12px !important; right: 12px; top: auto !important; bottom: calc(12px + env(safe-area-inset-bottom));
   width: auto; max-width: 480px; margin: 0 auto;
@@ -292,7 +278,6 @@ html.map-full-open, html.map-full-open body { overflow: hidden; }
 .popup.sheet.preview .popup-close { background: rgba(0, 0, 0, .5); color: #fff; }
 .popup.sheet.preview .popup-body { padding-right: 15px; }
 
-/* ---------------------------------------------------------------- section list */
 .section-block { margin-top: clamp(20px, 3vw, 32px); }
 .section-block-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
 .section-block-head h2 { margin: 0; font-size: 19px; font-weight: 800; letter-spacing: -.02em; }
@@ -318,7 +303,6 @@ html.map-full-open, html.map-full-open body { overflow: hidden; }
 .sec-card .meta b { color: var(--ink); font-weight: 700; }
 .sec-card .thumb { display: none; }
 
-/* ---------------------------------------------------------------- overview page */
 .overview {
   display: grid; gap: clamp(16px, 2.4vw, 32px);
   grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
@@ -362,7 +346,6 @@ html.map-full-open, html.map-full-open body { overflow: hidden; }
 
 .footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 16px; justify-content: space-between; }
 
-/* ---------------------------------------------------------------- responsive */
 @media (max-width: 1560px) {
   .app-header.has-nav .brand-sub { display: none; }
 }
@@ -404,12 +387,10 @@ html.map-full-open, html.map-full-open body { overflow: hidden; }
   *, *::before, *::after { transition: none !important; animation: none !important; }
 }
 
-/* 번호 원: 숫자를 원 정중앙에 */
 .trail-card .num, .popup.preview .num, .sec-card .num, .popup-photo .badge {
   line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: 0; text-align: center;
 }
 
-/* 통합형 지도 제목 - 원본(AI) 위치·크기 기준, 지도 폭(cqw) 비례 → 확대/축소와 함께 변함 */
 .overview .map-canvas { container-type: inline-size; }
 .ov-title {
   position: absolute; left: 3.9%; top: 4.2%;
@@ -434,7 +415,6 @@ html.map-full-open, html.map-full-open body { overflow: hidden; }
   color: #1c1715; font-size: 8.4cqw; font-weight: 800; line-height: 1.08; letter-spacing: -.05em;
 }
 
-/* 통합형: 지도를 크게(화면 높이 기준), 목록은 좁게 → 둘을 붙여서 가운데 정렬 */
 .overview {
   grid-template-columns: minmax(0, calc(100vh - var(--header-h) - 36px)) 440px;
   justify-content: center;
@@ -455,7 +435,6 @@ html.map-full-open, html.map-full-open body { overflow: hidden; }
   .trail-card .t { font-size: 16px; }
 }
 
-/* 개별형 지도 제목 (지도 안, 원본 위치·크기 기준) */
 .map-canvas { container-type: inline-size; }
 .map-title {
   position: absolute; display: flex; align-items: baseline; gap: .7cqw; margin-top: .34cqw;
@@ -463,24 +442,23 @@ html.map-full-open, html.map-full-open body { overflow: hidden; }
 }
 .mt-name { font-size: var(--fs); font-weight: 800; line-height: 1.2; letter-spacing: -.01em; color: #1c1715; }
 .mt-km {
-  /* 원본 디자인: 회색 · 굵게, 배경 없음 */
+
   font-size: var(--ks); font-weight: 700; line-height: 1; letter-spacing: 0; color: #808080;
 }
 .mt-km small { font-size: 1em; font-weight: 700; }
-/* 제목은 한 곳에만: 데스크톱은 지도 안, 모바일은 지도 위 */
+
 .trail-title { display: none; }
 @media (max-width: 640px) {
   .trail-title { display: block; }
   .map-title { display: none; }
 }
 
-/* ---------------------------------------------------------------- 배경 (깨끗한 밝은 톤, 지도 바다색과 어울리는 차가운 흰색) */
 body {
   background-color: #f5f8fb;
   background-image: linear-gradient(180deg, #eef4f9 0%, #f6f9fb 38%, #fafbfc 100%);
   background-attachment: fixed;
 }
-/* 지도와 목록 사이 간격 */
+
 .overview { column-gap: clamp(28px, 3.4vw, 56px); }
 .app-header {
   background: rgba(255, 255, 255, .8);
@@ -492,13 +470,10 @@ body {
 .footer { border-top-color: rgba(30, 60, 40, .1); }
 @media (max-width: 640px) { body { background-attachment: scroll; } }
 
-/* 잘못된 숲길 주소 안내 */
 .notfound { max-width: 640px; margin: 8vh auto; text-align: center; }
 .notfound h1 { margin: 0 0 8px; font-size: 26px; font-weight: 800; letter-spacing: -.03em; }
 .notfound p { margin: 0 0 22px; color: var(--muted); }
 .nf-list { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
 
-/* 통합형 숲길 벡터 선 */
 .ov-lines path { fill: none; stroke-linecap: round; stroke-linejoin: round; transition: opacity .22s ease; }
 .has-active .ov-lines path:not(.is-active) { opacity: .2; }
-/* 선택된 숲길은 그림자 없이 선만 조금 굵게 (JS 에서 굵기 지정) */

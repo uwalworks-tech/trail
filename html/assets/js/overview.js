@@ -1,4 +1,3 @@
-/* 국가숲길 - 통합형 지도 (숲길 hover 시 개별형 지도 미리보기) */
 (function () {
   'use strict';
   var F = window.FOREST;
@@ -33,12 +32,12 @@
   var base = F.el('img', { alt: '국가숲길 통합 노선도', draggable: 'false', decoding: 'async' });
   var overlays = F.el('div', { class: 'overlays', style: 'position:absolute;inset:0' });
   var hits = F.svg('svg', { class: 'hits', viewBox: '0 0 ' + W + ' ' + H, preserveAspectRatio: 'none' });
-  // 지도 제목 (지도와 함께 확대/축소)
+
   var title = F.el('div', { class: 'ov-title', 'aria-hidden': 'true' },
     '<span class="ov-km">' + totalKm.toLocaleString() + '<small>km</small></span>' +
     '<span class="ov-sub">' + F.trails.length + '개 숲길로 이루어진</span>' +
     '<span class="ov-name">국가숲길</span>');
-  // 숲길 선을 벡터로 한 번 더 그림: 원본 선(0.7~1pt)이 화면에서 1px 미만이라 흐리게 보이는 문제 보완
+
   var lines = F.svg('svg', { class: 'ov-lines', viewBox: '0 0 ' + W + ' ' + H, preserveAspectRatio: 'none', 'aria-hidden': 'true' });
   canvas.appendChild(base); canvas.appendChild(title); canvas.appendChild(lines); canvas.appendChild(overlays); canvas.appendChild(hits);
   stage.insertBefore(canvas, loading);
@@ -65,11 +64,10 @@
   });
   Promise.all(loads).then(function () { loading.classList.add('done'); });
 
-  // 미리보기 이미지 미리 받아두기
   setTimeout(function () { items.forEach(function (x) { (new Image()).src = F.url(x.t.preview); }); }, 1200);
 
   var active = null, pinned = null, cards = {};
-  var curLw = 1.6;  // 현재 숲길 선 굵기 (확대 비율에 따라 바뀜)
+  var curLw = 1.6;
   var updateTools;
   var popup = new F.Popup('preview');
   var pz = new F.PanZoom(stage, canvas, {
@@ -77,7 +75,7 @@
     aspect: W / H,
     onChange: function (pz) {
       var z = pz.pxPer(W);
-      // 화면에서 약 1.8px 이상, 확대해도 원본보다 가늘어지지 않게
+
       var lw = Math.max(0.9, 1.8 / z);
       items.forEach(function (x) { x.path.style.strokeWidth = (18 / z) + 'px'; x.line.style.strokeWidth = (x.t.id === active ? lw * 1.7 : lw) + 'px'; });
       curLw = lw;
@@ -107,7 +105,7 @@
       '<h3 class="popup-title"><span class="num" style="background:' + t.color + '">' + t.id + '</span><span style="color:' + F.textColor(t.color) + '">' + F.esc(t.name) + '</span></h3>' +
       '<p class="popup-km">' + t.km + 'km · ' + t.sections + '개 구간</p>' +
       '<div class="go">' + F.icon.pointer + '클릭하면 상세 노선도로 이동합니다</div>' +
-      (pinnedMode ? '<a class="btn btn-primary popup-cta" href="map.html?trail=' + t.slug + '">상세 노선도 보기 ' + F.icon.arrow + '</a>' : '') +
+      (pinnedMode ? '<a class="btn btn-primary popup-cta" href="' + F.page(t.slug) + '">상세 노선도 보기 ' + F.icon.arrow + '</a>' : '') +
       '</div><button type="button" class="popup-close" aria-label="닫기">' + F.icon.close + '</button>';
   }
   function itemOf(el) {
@@ -138,7 +136,7 @@
     if (e.pointerType !== 'mouse' || pinned != null) return;
     var to = e.relatedTarget;
     if (to && itemOf(to)) return;
-    // 선이 가늘어 잠깐 벗어나도 깜빡이지 않도록 약간 늦게 해제
+
     leaveSoon();
   });
   var leaveTimer = null;
@@ -156,12 +154,12 @@
     var x = itemOf(e.target);
     if (!x) return;
     e.stopPropagation();
-    // 마우스: 바로 상세 지도로 이동 / 터치: 먼저 미리보기 표시
+
     if (e.pointerType === 'mouse' || (F.canHover() && !e.pointerType)) {
-      location.href = 'map.html?trail=' + x.t.slug;
+      location.href = F.page(x.t.slug);
       return;
     }
-    if (pinned === x.t.id) { location.href = 'map.html?trail=' + x.t.slug; return; }
+    if (pinned === x.t.id) { location.href = F.page(x.t.slug); return; }
     pinned = x.t.id;
     setActive(x.t.id);
     popup.set(html(x, true));
@@ -183,11 +181,10 @@
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') clear(); });
   window.addEventListener('scroll', function () { popup.reposition(); }, { passive: true });
 
-  /* ---------- 숲길 카드 */
   var list = main.querySelector('.trail-list');
   F.trails.forEach(function (m) {
     var color = F.trailColor(m.id);
-    var a = F.el('a', { class: 'trail-card', href: 'map.html?trail=' + m.slug, style: '--c:' + color },
+    var a = F.el('a', { class: 'trail-card', href: F.page(m.slug), style: '--c:' + color },
       '<span class="thumb"><img src="' + F.url(m.preview) + '" alt="" loading="lazy"></span>' +
       '<span><span class="t"><span class="num">' + m.id + '</span>' + F.esc(m.name) + '</span>' +
       '<span class="m" style="display:block">' + m.km + 'km · ' + m.sections + '개 구간</span></span>' +

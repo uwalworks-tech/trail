@@ -1,13 +1,22 @@
-/* 국가숲길 인터랙티브 지도 - 공통 모듈 (팝업, 확대/이동, 유틸) */
 (function () {
   'use strict';
   var F = (window.FOREST = window.FOREST || {});
-  // 캐시 방지 버전: <script src="...common.js?v=x"> 의 v 값을 동적으로 불러오는 파일에도 사용
-  F.v = ((document.currentScript && document.currentScript.src.split('?v=')[1]) || '').split('&')[0];
-  // 이미지 등 리소스 주소에 버전 붙이기 (Cloudflare/브라우저 캐시에 남은 옛 이미지 방지)
-  F.url = function (src) { return F.v && src && src.indexOf('?') < 0 ? src + '?v=' + F.v : src; };
 
-  /* ------------------------------------------------------------ icons */
+  var selfSrc = (document.currentScript && document.currentScript.src) || '';
+  F.v = (selfSrc.split('?v=')[1] || '').split('&')[0];
+
+  F.root = selfSrc ? selfSrc.replace(/assets\/js\/common\.js.*$/, '') : '';
+
+  F.url = function (src) {
+    if (!src) return src;
+    if (!/^([a-z][a-z0-9+.-]*:|\/|#)/i.test(src)) src = F.root + src;
+    return F.v && src.indexOf('?') < 0 ? src + '?v=' + F.v : src;
+  };
+
+  F.page = function (slug) {
+    return F.root + (slug ? slug + '/' : '') + (location.protocol === 'file:' ? 'index.html' : '');
+  };
+
   F.icon = {
     tree: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 6 10h3l-4 6h5v6h4v-6h5l-4-6h3z"/></svg>',
     back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>',
@@ -25,7 +34,6 @@
     mountain: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>'
   };
 
-  /* ------------------------------------------------------------ utils */
   F.esc = function (s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
@@ -54,7 +62,7 @@
     var c = rgb(hex).map(function (v) { v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); });
     return .2126 * c[0] + .7152 * c[1] + .0722 * c[2];
   }
-  /** 흰 배경에서 읽기 좋은 글자색 (너무 밝은 노선색은 어둡게) */
+
   F.textColor = function (hex) {
     var c = rgb(hex), k = 1;
     while ((1.05) / (lum('#' + c.map(function (v) { return ('0' + Math.round(v * k).toString(16)).slice(-2); }).join('')) + .05) < 3.2 && k > .3) k -= .05;
@@ -84,7 +92,7 @@
     clearTimeout(t._h);
     t._h = setTimeout(function () { t.classList.remove('show'); }, 1400);
   };
-  /** 숲길 찾기: slug(naepo) · 번호(5) · 한글 이름(내포문화숲길) 모두 허용, 공백/대소문자/끝의 / 무시 */
+
   F.trailBySlug = function (key) {
     var k = String(key == null ? '' : key).trim().replace(/\/+$/, '').toLowerCase().replace(/\s+/g, '');
     if (!k) return null;
@@ -101,13 +109,12 @@
     return '#2f6b45';
   };
 
-  /* ------------------------------------------------------------ Popup */
   function Popup(extraClass) {
     this.el = F.el('div', { class: 'popup ' + (extraClass || ''), role: 'dialog', 'aria-live': 'polite' });
     this.el.setAttribute('aria-hidden', 'true');
     document.body.appendChild(this.el);
     this.pinned = false;
-    this.anchor = null;   // 고정 위치 계산 함수 () => {x, y}
+    this.anchor = null;
     var self = this;
     this.el.addEventListener('click', function (e) {
       if (e.target.closest('.popup-close')) { e.stopPropagation(); self.onClose && self.onClose(); }
@@ -126,7 +133,7 @@
     el.style.left = Math.round(left) + 'px';
     el.style.top = Math.round(top) + 'px';
   };
-  /** 요소 옆(오른쪽 우선)에 표시 */
+
   Popup.prototype.placeBeside = function (rect) {
     var el = this.el;
     if (el.classList.contains('sheet')) return;
@@ -135,7 +142,7 @@
     if (left + w > vw - 8) left = rect.left - gap - w;
     if (left < 8) left = Math.max(8, Math.min(vw - w - 8, rect.left));
     var top = rect.top + rect.height / 2 - h / 2;
-    if (rect.minTop != null) top = Math.max(top, rect.minTop);   // 지도 제목 등을 가리지 않게
+    if (rect.minTop != null) top = Math.max(top, rect.minTop);
     top = Math.max(8, Math.min(vh - h - 8, top));
     el.style.left = Math.round(left) + 'px';
     el.style.top = Math.round(top) + 'px';
@@ -150,7 +157,7 @@
     if (opts.rect) this.placeBeside(opts.rect);
     else if (opts.x != null) this.place(opts.x, opts.y);
     this.anchor = opts.anchor || null;
-    // 다음 프레임에 표시 (위치 계산 후 애니메이션)
+
     requestAnimationFrame(function () { el.classList.add('show'); });
   };
   Popup.prototype.reposition = function () {
@@ -167,13 +174,6 @@
   Popup.prototype.isOpen = function () { return this.el.classList.contains('show'); };
   F.Popup = Popup;
 
-  /* ------------------------------------------------------------ PanZoom */
-  /**
-   * stage: 보이는 영역, canvas: 지도(transform 대상)
-   * - contain: 지도 전체가 보이도록 / cover: 영역을 꽉 채우고 좌우로 이동 (모바일)
-   * - 마우스 휠(Ctrl/⌘), 더블클릭, 버튼, 드래그, 핀치 확대 지원
-   * - 움직이는 동안만 will-change 를 켜서, 멈추면 확대된 크기로 다시 선명하게 그린다
-   */
   function PanZoom(stage, canvas, opts) {
     this.stage = stage; this.canvas = canvas;
     this.opts = opts || {};
@@ -187,11 +187,11 @@
     this._bind();
   }
   PanZoom.prototype.size = function () { return { w: this.stage.clientWidth, h: this.stage.clientHeight }; };
-  /** 영역 크기에 맞춰 지도 기본 크기 계산 (reset: 초기 위치로) */
+
   PanZoom.prototype.layout = function (reset) {
     var z = this.size(), a = this.aspect;
     if (!z.w || !z.h) return;
-    // 현재 화면 중심 (지도 비율 좌표) 기억
+
     var cf = this.cw > 1 ? { fx: (z.w / 2 - this.x) / (this.cw * this.s), fy: (z.h / 2 - this.y) / (this.ch * this.s) } : null;
     var contain = z.w / z.h > a ? { w: z.h * a, h: z.h } : { w: z.w, h: z.w / a };
     var cover = z.w / z.h > a ? { w: z.w, h: z.w / a } : { w: z.h * a, h: z.h };
@@ -232,7 +232,7 @@
     c.style.transform = 'translate(' + this.x + 'px,' + this.y + 'px) scale(' + this.s + ')';
     var p = this.canPan();
     this.stage.classList.toggle('is-zoomed', p.x || p.y);
-    // 세로로 넘칠 때만 터치 스크롤을 막고, 가로만 넘치면 세로 페이지 스크롤은 허용
+
     this.stage.style.touchAction = p.y ? 'none' : (p.x ? 'pan-y' : 'pan-x pan-y');
     if (this.opts.onChange) this.opts.onChange(this);
     if (animate) {
@@ -240,14 +240,14 @@
       this._at = setTimeout(function () { c.classList.remove('animate'); if (self.opts.onChange) self.opts.onChange(self); }, 300);
     }
   };
-  /** 움직이는 동안 GPU 레이어 사용 → 멈추면 해제해서 선명하게 다시 그림 */
+
   PanZoom.prototype.moving = function () {
     var c = this.canvas;
     c.classList.add('is-moving');
     clearTimeout(this._mv);
     this._mv = setTimeout(function () { c.classList.remove('is-moving'); }, 180);
   };
-  /** cx, cy: stage 기준 좌표 */
+
   PanZoom.prototype.zoomAt = function (factor, cx, cy, animate) {
     var ns = Math.max(this.min, Math.min(this.max, this.s * factor));
     var k = ns / this.s;
@@ -269,17 +269,17 @@
     this.apply(true);
   };
   PanZoom.prototype.isInitial = function () { return Math.abs(this.s - 1) < .001; };
-  /** 지도 비율 좌표 → 화면 좌표 */
+
   PanZoom.prototype.toClient = function (fx, fy) {
     var r = this.stage.getBoundingClientRect();
     return { x: r.left + this.x + fx * this.cw * this.s, y: r.top + this.y + fy * this.ch * this.s };
   };
-  /** 화면 좌표 → 지도 비율 좌표 */
+
   PanZoom.prototype.toFrac = function (clientX, clientY) {
     var r = this.stage.getBoundingClientRect();
     return { fx: (clientX - r.left - this.x) / (this.cw * this.s), fy: (clientY - r.top - this.y) / (this.ch * this.s) };
   };
-  /** 화면 px / 지도 1단위 (viewBox 폭 W 기준) */
+
   PanZoom.prototype.pxPer = function (W) { return this.cw * this.s / W; };
   PanZoom.prototype._bind = function () {
     var self = this, st = this.stage;
@@ -351,20 +351,20 @@
       delete self.pointers[e.pointerId];
       var n = Object.keys(self.pointers).length;
       if (n < 2) pinch = null;
-      if (n === 1) { // 핀치 후 한 손가락: 그 위치에서 이동 재시작
+      if (n === 1) {
         var id = Object.keys(self.pointers)[0], p = self.pointers[id];
         start = { x: p.x, y: p.y, ox: self.x, oy: self.y };
       }
       if (n === 0) {
         start = null;
         st.classList.remove('is-dragging');
-        // 드래그 직후 click 무시를 위해 moved 는 다음 pointerdown 에서 초기화
+
       }
     }
     st.addEventListener('pointerup', end);
     st.addEventListener('pointercancel', end);
     st.addEventListener('pointerleave', function (e) { if (e.pointerType === 'mouse') end(e); });
-    // 드래그 후 발생하는 click 차단
+
     st.addEventListener('click', function (e) {
       if (e.target.closest('.map-tools, .full-exit')) { self.moved = false; return; }
       if (self.moved) { e.stopPropagation(); e.preventDefault(); self.moved = false; }
@@ -374,7 +374,6 @@
   };
   F.PanZoom = PanZoom;
 
-  /** 확대/축소 + 전체화면 버튼 */
   F.mapTools = function (stage, pz) {
     var box = F.el('div', { class: 'map-tools' });
     var bFull = F.el('button', { type: 'button', class: 'tool-full', 'aria-label': '전체 화면', title: '전체 화면' }, F.icon.expand);
@@ -389,7 +388,6 @@
     bOut.addEventListener('click', function () { pz.zoomBy(1 / 1.6); });
     bReset.addEventListener('click', function () { pz.reset(); });
 
-    // 전체 화면 (iOS 에서도 동작하도록 CSS 고정 레이어 방식)
     function setFull(on) {
       if (on === stage.classList.contains('is-full')) return;
       stage.classList.toggle('is-full', on);
@@ -410,10 +408,9 @@
     };
   };
 
-  /** 상단 헤더 */
   F.header = function (opts) {
     var h = F.el('header', { class: 'app-header' });
-    var brand = F.el('a', { class: 'brand', href: 'index.html', 'aria-label': '국가숲길 전체 지도' },
+    var brand = F.el('a', { class: 'brand', href: F.page(), 'aria-label': '국가숲길 전체 지도' },
       '<span class="brand-mark">' + F.icon.tree + '</span>' +
       '<span class="brand-text"><span class="brand-title">국가숲길</span><span class="brand-sub">9개 숲길로 이루어진 1,466km</span></span>');
     h.appendChild(brand);
@@ -423,7 +420,7 @@
       var nav = F.el('nav', { class: 'trail-nav', 'aria-label': '숲길 선택' });
       var sel = F.el('select', { class: 'trail-select', 'aria-label': '숲길 선택' });
       (F.trails || []).forEach(function (t) {
-        var a = F.el('a', { href: 'map.html?trail=' + t.slug },
+        var a = F.el('a', { href: F.page(t.slug) },
           '<span class="dot" style="background:' + F.trailColor(t.id) + '"></span>' + F.esc(t.name));
         if (t.slug === opts.current) a.setAttribute('aria-current', 'page');
         nav.appendChild(a);
@@ -431,11 +428,11 @@
         if (t.slug === opts.current) o.selected = true;
         sel.appendChild(o);
       });
-      sel.addEventListener('change', function () { location.href = 'map.html?trail=' + sel.value; });
+      sel.addEventListener('change', function () { location.href = F.page(sel.value); });
       h.appendChild(nav);
       h.appendChild(sel);
-      h.appendChild(F.el('a', { class: 'btn', href: 'index.html' }, F.icon.back + '<span class="btn-label">전체 지도</span>'));
-      // 스크롤 가능한 쪽 가장자리만 흐리게
+      h.appendChild(F.el('a', { class: 'btn', href: F.page() }, F.icon.back + '<span class="btn-label">전체 지도</span>'));
+
       var edges = function () {
         var max = nav.scrollWidth - nav.clientWidth;
         nav.classList.toggle('fade-l', nav.scrollLeft > 2);

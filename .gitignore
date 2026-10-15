@@ -9,3 +9,9 @@
 *.txt
 .DS_Store
 Thumbs.db
+!html/robots.txt
+/.playwright-mcp/
+html/README.md
+
+README.md
+*.zip
