@@ -477,3 +477,16 @@ body {
 
 .ov-lines path { fill: none; stroke-linecap: round; stroke-linejoin: round; transition: opacity .22s ease; }
 .has-active .ov-lines path:not(.is-active) { opacity: .2; }
+
+/* Body-only: map without header, sidebar, hints or footer so it can be embedded anywhere */
+body { background: transparent; }
+.page { padding-bottom: clamp(12px, 2vw, 24px); }
+.overview { display: block; }
+.overview .map-col { position: static; }
+.overview .map-shell { max-width: min(100%, calc(100vh - 48px)); margin: 0 auto; }
+.trail-head { margin: 0; }
+.trail-title { display: block; position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+@media (max-width: 640px) {
+  .trail-head { margin-bottom: 10px; }
+  .trail-title { position: static; width: auto; height: auto; overflow: visible; clip: auto; white-space: normal; }
+}

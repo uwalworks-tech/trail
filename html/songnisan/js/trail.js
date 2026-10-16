@@ -5,8 +5,6 @@
   var key = document.getElementById('main').getAttribute('data-trail') || new URLSearchParams(location.search).get('trail');
   var meta = key ? F.trailBySlug(key) : F.trails[0];
   if (!meta) {
-
-    F.header({});
     document.getElementById('main').innerHTML =
       '<div class="notfound"><h1>숲길을 찾을 수 없습니다</h1><p>주소의 <b>' + F.esc(key) + '</b> 값을 확인해 주세요.</p>' +
       '<div class="nf-list">' + F.trails.map(function (t) {
@@ -15,25 +13,16 @@
     return;
   }
 
-  F.header({ current: meta.slug });
   document.title = meta.name + ' 노선도 | 국가숲길';
 
+  // Title is drawn inside the map on desktop; this heading shows only on mobile (see .trail-title)
   var main = document.getElementById('main');
   main.innerHTML =
     '<div class="trail-wrap">' +
     '<div class="trail-head">' +
     '  <div class="trail-title"><h1>' + F.esc(meta.name) + '<small>' + meta.km + 'km</small></h1></div>' +
-    '  <div class="trail-meta">' +
-    '    <span class="chip">' + F.icon.route + meta.sections + '개 구간</span>' +
-    '    <span class="hint desktop">' + F.icon.pointer + '노선에 마우스를 올리면 정보가 표시됩니다 · Ctrl + 스크롤로 확대</span>' +
-    '    <span class="hint touch">' + F.icon.hand + '노선을 누르면 정보가 표시됩니다 · 두 손가락으로 확대 · 좌우로 밀어서 이동</span>' +
-    '  </div>' +
     '</div>' +
     '<div class="map-shell"><div class="map-stage" tabindex="-1"><div class="map-loading">지도를 불러오는 중…</div></div></div>' +
-    '<section class="section-block" aria-labelledby="sec-h">' +
-    '  <div class="section-block-head"><h2 id="sec-h">구간 안내</h2><p>구간을 선택하면 지도에서 위치를 보여줍니다.</p></div>' +
-    '  <div class="sec-list"></div>' +
-    '</section>' +
     '</div>';
 
   Promise.resolve().then(function () {
@@ -146,7 +135,7 @@
 
     var popup = new F.Popup();
     popup.onClose = function () { clear(); };
-    var activeSet = [], pinnedKey = null, cards = [];
+    var activeSet = [], pinnedKey = null;
 
     function km(v) { return v ? v + 'km' : ''; }
     function sectionHtml(s, txt, photoIndex) {
@@ -211,7 +200,6 @@
       legendRows.forEach(function (r) {
         r.el.classList.toggle('is-active', nos.length > 0 && r.data.sections.some(function (n) { return nos.indexOf(n) >= 0; }));
       });
-      cards.forEach(function (c, i) { c.classList.toggle('is-active', idxs.indexOf(i) >= 0); });
     }
     function idxOfNos(nos) {
       var out = [];
@@ -354,52 +342,11 @@
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') clear(); });
     document.addEventListener('click', function (e) {
       if (pinnedKey == null) return;
-      if (e.target.closest('.popup') || e.target.closest('.map-stage') || e.target.closest('.sec-card')) return;
+      if (e.target.closest('.popup') || e.target.closest('.map-stage')) return;
       clear();
     });
     window.addEventListener('scroll', function () { popup.reposition(); }, { passive: true });
     window.addEventListener('resize', function () { popup.reposition(); });
-
-    var listEl = main.querySelector('.sec-list');
-    function card(x, i) {
-      var s = x.data;
-      var c = F.el('button', { type: 'button', class: 'sec-card', style: '--c:' + s.color },
-        '<span class="num">' + F.esc(s.label) + '</span>' +
-        '<span class="name">' + F.esc(s.name) + '</span>' +
-        '<span class="meta"><span><b>' + km(s.km) + '</b></span>' +
-        (s.centers[0] ? '<span>' + F.esc(s.centers[0].name) + '</span>' : '') +
-        (s.resources[0] ? '<span>' + F.esc(s.resources.slice(0, 2).join(', ')) + (s.resources.length > 2 ? ' 외' : '') + '</span>' : '') +
-        '</span>');
-      c.addEventListener('mouseenter', function () { if (pinnedKey == null) { cancelLeave(); hoverKey = null; popup.hide(); setActive([i]); } });
-      c.addEventListener('mouseleave', function () { if (pinnedKey == null) leaveSoon(); });
-      c.addEventListener('focus', function () { if (pinnedKey == null) setActive([i]); });
-      c.addEventListener('blur', function () { if (pinnedKey == null) setActive([]); });
-      c.addEventListener('click', function (e) {
-        e.stopPropagation();
-        var r = stage.getBoundingClientRect();
-        var visible = r.top >= 0 && r.bottom <= window.innerHeight;
-        if (!visible) {
-          window.scrollTo({ top: window.scrollY + r.top - 80, behavior: 'smooth' });
-          setTimeout(function () { pinSection(i); }, 420);
-        } else pinSection(i);
-      });
-      cards[i] = c;
-      return c;
-    }
-    if (D.groups) {
-      D.groups.forEach(function (g) {
-        var items = secs.map(function (x, i) { return [x, i]; }).filter(function (p) { return p[0].data.group === g.key; });
-        if (!items.length) return;
-        listEl.appendChild(F.el('h3', { class: 'group-title', style: '--c:' + g.color }, F.esc(g.title) + ' <small style="color:var(--muted);font-weight:600">' + items.length + '개 코스</small>'));
-        var grid = F.el('div', { class: 'sec-grid' });
-        items.forEach(function (p) { grid.appendChild(card(p[0], p[1])); });
-        listEl.appendChild(grid);
-      });
-    } else {
-      var grid = F.el('div', { class: 'sec-grid' });
-      secs.forEach(function (x, i) { grid.appendChild(card(x, i)); });
-      listEl.appendChild(grid);
-    }
 
     pz.apply(false);
 

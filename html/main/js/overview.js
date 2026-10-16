@@ -2,27 +2,14 @@
   'use strict';
   var F = window.FOREST;
   var O = F.overview;
-  F.header({});
 
   var totalKm = F.trails.reduce(function (a, t) { return a + t.km; }, 0);
-  var totalSec = F.trails.reduce(function (a, t) { return a + t.sections; }, 0);
 
   var main = document.getElementById('main');
   main.innerHTML =
+    '<h1 class="sr-only">국가숲길 노선도</h1>' +
     '<div class="overview">' +
     '  <div class="map-col"><div class="map-shell"><div class="map-stage" tabindex="-1"><div class="map-loading">지도를 불러오는 중…</div></div></div></div>' +
-    '  <aside class="side">' +
-    '    <div class="side-intro">' +
-    '      <h1>국가숲길 노선도</h1>' +
-    '      <p>지도에서 숲길에 마우스를 올리면 상세 노선도를 미리 볼 수 있고, 클릭하면 구간별 정보를 확인할 수 있습니다.</p>' +
-    '      <div class="stats">' +
-    '        <div class="stat"><b>' + totalKm.toLocaleString() + 'km</b><span>총 거리</span></div>' +
-    '        <div class="stat"><b>' + F.trails.length + '개</b><span>숲길</span></div>' +
-    '        <div class="stat"><b>' + totalSec + '개</b><span>구간</span></div>' +
-    '      </div>' +
-    '    </div>' +
-    '    <nav class="trail-list" aria-label="숲길 목록"></nav>' +
-    '  </aside>' +
     '</div>';
 
   var W = O.size[0], H = O.size[1];
@@ -66,7 +53,7 @@
 
   setTimeout(function () { items.forEach(function (x) { (new Image()).src = F.url(x.t.preview); }); }, 1200);
 
-  var active = null, pinned = null, cards = {};
+  var active = null, pinned = null;
   var curLw = 1.6;
   var updateTools;
   var popup = new F.Popup('preview');
@@ -95,7 +82,6 @@
       x.line.classList.toggle('is-active', on);
       x.line.style.strokeWidth = (on ? curLw * 1.7 : curLw) + 'px';
       if (x.box) x.box.classList.toggle('is-active', on);
-      if (cards[x.t.id]) cards[x.t.id].classList.toggle('is-active', on);
     });
   }
   function html(x, pinnedMode) {
@@ -180,22 +166,6 @@
   });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') clear(); });
   window.addEventListener('scroll', function () { popup.reposition(); }, { passive: true });
-
-  var list = main.querySelector('.trail-list');
-  F.trails.forEach(function (m) {
-    var color = F.trailColor(m.id);
-    var a = F.el('a', { class: 'trail-card', href: F.page(m.slug), style: '--c:' + color },
-      '<span class="thumb"><img src="' + F.url(m.preview) + '" alt="" loading="lazy"></span>' +
-      '<span><span class="t"><span class="num">' + m.id + '</span>' + F.esc(m.name) + '</span>' +
-      '<span class="m" style="display:block">' + m.km + 'km · ' + m.sections + '개 구간</span></span>' +
-      '<span class="arrow">' + F.icon.arrow + '</span>');
-    a.addEventListener('mouseenter', function () { if (pinned == null) { cancelLeave(); setActive(m.id); } });
-    a.addEventListener('mouseleave', function () { if (pinned == null) leaveSoon(); });
-    a.addEventListener('focus', function () { if (pinned == null) setActive(m.id); });
-    a.addEventListener('blur', function () { if (pinned == null) setActive(null); });
-    cards[m.id] = a;
-    list.appendChild(a);
-  });
 
   pz.apply(false);
 })();

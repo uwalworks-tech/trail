@@ -410,45 +410,4 @@
       bIn.disabled = pz.s >= pz.max - .001;
     };
   };
-
-  F.header = function (opts) {
-    var h = F.el('header', { class: 'app-header' });
-    var brand = F.el('a', { class: 'brand', href: F.page(), 'aria-label': '국가숲길 전체 지도' },
-      '<span class="brand-mark">' + F.icon.tree + '</span>' +
-      '<span class="brand-text"><span class="brand-title">국가숲길</span><span class="brand-sub">9개 숲길로 이루어진 1,466km</span></span>');
-    h.appendChild(brand);
-    h.appendChild(F.el('div', { class: 'header-spacer' }));
-    if (opts && opts.current) {
-      h.classList.add('has-nav');
-      var nav = F.el('nav', { class: 'trail-nav', 'aria-label': '숲길 선택' });
-      var sel = F.el('select', { class: 'trail-select', 'aria-label': '숲길 선택' });
-      (F.trails || []).forEach(function (t) {
-        var a = F.el('a', { href: F.page(t.slug) },
-          '<span class="dot" style="background:' + F.trailColor(t.id) + '"></span>' + F.esc(t.name));
-        if (t.slug === opts.current) a.setAttribute('aria-current', 'page');
-        nav.appendChild(a);
-        var o = F.el('option', { value: t.slug }, t.id + '. ' + F.esc(t.name));
-        if (t.slug === opts.current) o.selected = true;
-        sel.appendChild(o);
-      });
-      sel.addEventListener('change', function () { location.href = F.page(sel.value); });
-      h.appendChild(nav);
-      h.appendChild(sel);
-      h.appendChild(F.el('a', { class: 'btn', href: F.page() }, F.icon.back + '<span class="btn-label">전체 지도</span>'));
-
-      var edges = function () {
-        var max = nav.scrollWidth - nav.clientWidth;
-        nav.classList.toggle('fade-l', nav.scrollLeft > 2);
-        nav.classList.toggle('fade-r', nav.scrollLeft < max - 2);
-      };
-      nav.addEventListener('scroll', edges, { passive: true });
-      window.addEventListener('resize', edges);
-      setTimeout(function () {
-        var cur = nav.querySelector('[aria-current]');
-        if (cur && nav.scrollWidth > nav.clientWidth) nav.scrollLeft = cur.offsetLeft - nav.clientWidth / 2 + cur.offsetWidth / 2;
-        edges();
-      }, 0);
-    }
-    document.body.insertBefore(h, document.body.firstChild);
-  };
 })();
