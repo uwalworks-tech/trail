@@ -21,9 +21,9 @@ jobs:
         run: |
           # Tìm danh sách file thay đổi từ Git commit (chạy tại Runner, không quét server)
           if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ] || [ -z "${{ github.event.before }}" ]; then
-            git diff --name-only HEAD~1 HEAD > changed.txt || git ls-files > changed.txt
+            git diff --name-only --diff-filter=ACMR HEAD~1 HEAD > changed.txt || git ls-files > changed.txt
           else
-            git diff --name-only ${{ github.event.before }} ${{ github.sha }} > changed.txt
+            git diff --name-only --diff-filter=ACMR ${{ github.event.before }} ${{ github.sha }} > changed.txt
           fi
 
           # Chỉ lọc các file nằm trong thư mục html/
